@@ -8,8 +8,8 @@ class localise:
 
     def get_calibration_coords(self, img):
 
-        lower_green = np.array([145, 80, 60])
-        upper_green = np.array([160, 255, 255])
+        lower_green = np.array([20, 40, 50])
+        upper_green = np.array([85, 255, 220])
 
         # cv2.imwrite('test.jpeg', im)
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -35,6 +35,10 @@ class localise:
         # cv2.imshow("test7", mask)
         # cv2.waitKey(0)
 
+        mask = 255 - mask
+
+        img = cv2.bitwise_and(img, img, mask = mask)
+
         # cnts, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         # coords = []
         #
@@ -50,4 +54,4 @@ class localise:
         #     except Exception as e:
         #         break
         # return coords
-        return mask
+        return img
