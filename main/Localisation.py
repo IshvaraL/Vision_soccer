@@ -35,7 +35,7 @@ class localise:
         # cv2.imshow("test7", mask)
         # cv2.waitKey(0)
 
-        mask = 255 - mask
+        mask = cv2.bitwise_not(mask)
 
         img = cv2.bitwise_and(img, img, mask = mask)
 
