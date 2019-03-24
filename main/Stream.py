@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import cv2
 from time import sleep
 
 class Stream:
@@ -13,6 +14,17 @@ class Stream:
             print("There is no pipe\n exiting now...")
             return
 
+        cap = cv2.VideoCapture('../res/test.mkv')
+
         while True:
-            self.pipe.send("Hello")
-            sleep(1)
+
+            ret, frame = cap.read()
+            self.pipe.send(frame)
+            cv2.imshow('frame', frame)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+            sleep(0.02)
+        cap.release()
+        cv2.destroyAllWindows()
+        return

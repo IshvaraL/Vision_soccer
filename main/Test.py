@@ -14,3 +14,11 @@ if __name__ == "__main__":
     vis = mp.Process(target=vision.run, args = ())
     vis.start()
     str.start()
+
+    if vis.is_alive() is False:
+        str.kill()
+        str.join()
+
+    if str.is_alive() is False:
+        vis.kill()
+        vis.join()

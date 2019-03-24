@@ -4,6 +4,8 @@ import numpy as np
 import multiprocessing as mp
 from time import sleep
 
+from Localisation import localise
+
 class Vision:
 
     def __init__(self, pipe=None):
@@ -16,9 +18,22 @@ class Vision:
             print("There is no pipe\nExiting now...")
             return
 
+        loc = localise()
+
         while True:
-            print(self.pipe.recv())
-            sleep(1)
+            frame = self.pipe.recv()
+
+            img = loc.get_calibration_coords(frame)
+
+            cv2.imshow('img', img)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        cv2.destroyAllWindows()
+        return
+
+
 
 
 
