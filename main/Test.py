@@ -15,10 +15,16 @@ if __name__ == "__main__":
     vis.start()
     str.start()
 
-    if vis.is_alive() is False:
-        str.kill()
-        str.join()
+    while True:
+        if vis.is_alive() is False:
+            print("vis died")
+            str.terminate()
+            str.join()
+            break
 
-    if str.is_alive() is False:
-        vis.kill()
-        vis.join()
+        if str.is_alive() is False:
+            print("str died")
+            vis.terminate()
+            vis.join()
+            break
+
