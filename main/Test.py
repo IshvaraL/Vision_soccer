@@ -11,7 +11,7 @@ if __name__ == "__main__":
     stream = Stream(child_conn)
     vision = Vision(parent_conn)
 
-    comm = Comm()
+    # comm = Comm()
 
     str = mp.Process(target=stream.run, args = ())
     vis = mp.Process(target=vision.run, args = ())
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     while True:
 
-        comm.send(msg)
+        # comm.send(msg)
 
         time.sleep(1)
 

@@ -1,14 +1,15 @@
 import cv2
 import numpy as np
 
-class localise:
+
+class Localise:
 
     def __init__(self):
         pass
 
-    def get_calibration_coords(self, img):
+    def filter_out_green(self, img):
 
-        lower_green = np.array([20, 40, 50])
+        lower_green = np.array([20, 50, 50])
         upper_green = np.array([85, 255, 220])
 
         # cv2.imwrite('test.jpeg', im)
@@ -35,7 +36,7 @@ class localise:
         # cv2.imshow("test7", mask)
         # cv2.waitKey(0)
 
-        mask = cv2.bitwise_not(mask)
+        # mask = cv2.bitwise_not(mask)
 
         img = cv2.bitwise_and(img, img, mask = mask)
 
@@ -54,4 +55,26 @@ class localise:
         #     except Exception as e:
         #         break
         # return coords
+        return img
+
+    def filter_out_red(self, img):
+        lower_red = np.array([0, 0, 0])
+        upper_red = np.array([35, 255, 255])
+
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv, lower_red, upper_red)
+        # mask = cv2.bitwise_not(mask)
+        img = cv2.bitwise_and(img, img, mask=mask)
+
+        return img
+
+    def filter_out_blue(self, img):
+        lower_blue = np.array([70, 40, 40])
+        upper_blue = np.array([140, 255, 255])
+
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv, lower_blue, upper_blue)
+        # mask = cv2.bitwise_not(mask)
+        img = cv2.bitwise_and(img, img, mask=mask)
+
         return img
