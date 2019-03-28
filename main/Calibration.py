@@ -3,8 +3,8 @@ import numpy as np
 
 def get_calibration_coords(img):
 
-    lower_green = np.array([145, 80, 60])
-    upper_green = np.array([160, 255, 255])
+    lower_green = np.array([155, 60, 20])
+    upper_green = np.array([200, 255, 255])
 
     # cv2.imwrite('test.jpeg', im)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -12,10 +12,11 @@ def get_calibration_coords(img):
     # cv2.waitKey(0)
     # Threshold the HSV image to get only blue colors
     mask = cv2.inRange(hsv, lower_green, upper_green)
-    # cv2.imshow("test2", mask)
+    img = cv2.bitwise_and(img, img, mask=mask)
+    # cv2.imshow("test2", img)
     # cv2.waitKey(0)
-    kernel = np.ones((2, 2), np.uint8)
-    mask = cv2.erode(mask, None, iterations=1)
+    kernel = np.ones((6, 6), np.uint8)
+    mask = cv2.erode(mask, None, iterations=2)
     # cv2.imshow("test3", mask)
     # cv2.waitKey(0)
     kernel = np.ones((5, 5), np.uint8)
@@ -40,11 +41,12 @@ def get_calibration_coords(img):
         try:
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
-            coords.insert(0,(cX,cY))
+            # coords.insert(0,(cX,cY))
+            coords.append((cX,cY))
 
         except Exception as e:
             break
     return coords
 
-img3d = cv2.imread('../pics/soccerfield_3d.png', 1)
-print(get_calibration_coords(img3d))
+# img3d = cv2.imread('../pics/soccerfield_3d.png', 1)
+# print(get_calibration_coords(img3d))
