@@ -7,10 +7,13 @@ class Localise:
     def __init__(self):
         pass
 
-    def filter_out_green(self, img):
+    def filter_out_green(self, img, greenfilter):
 
-        lower_green = np.array([20, 50, 50])
-        upper_green = np.array([85, 255, 220])
+        # lower_green = np.array([20, 50, 50])
+        # upper_green = np.array([85, 255, 220])
+
+        lower_green = np.array([greenfilter['LowHue'], greenfilter['LowSaturation'], greenfilter['LowValue']])
+        upper_green = np.array([greenfilter['HighHue'], greenfilter['HighSaturation'], greenfilter['HighValue']])
 
         # cv2.imwrite('test.jpeg', im)
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -57,15 +60,18 @@ class Localise:
         # return coords
         return img
 
-    def filter_out_red(self, img):
-        lower_red = np.array([0, 60, 70])
-        upper_red = np.array([35, 180, 180])
+    def filter_out_red(self, img, redfilter):
+        # lower_red = np.array([0, 60, 70])
+        # upper_red = np.array([35, 180, 180])
+
+        lower_red = np.array([redfilter['LowHue'], redfilter['LowSaturation'], redfilter['LowValue']])
+        upper_red = np.array([redfilter['HighHue'], redfilter['HighSaturation'], redfilter['HighValue']])
 
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, lower_red, upper_red)
         # mask = cv2.bitwise_not(mask)
         img = cv2.bitwise_and(img, img, mask=mask)
-
+        return img
         kernel = np.ones((5, 5), np.uint8)
         mask = cv2.erode(mask, None, iterations=2)
         # cv2.imshow("red3", mask)
@@ -98,15 +104,18 @@ class Localise:
 
         return img, coords
 
-    def filter_out_blue(self, img):
-        lower_blue = np.array([70, 40, 40])
-        upper_blue = np.array([140, 255, 255])
+    def filter_out_blue(self, img, bluefilter):
+        # lower_blue = np.array([70, 40, 40])
+        # upper_blue = np.array([140, 255, 255])
+
+        lower_blue = np.array([bluefilter['LowHue'], bluefilter['LowSaturation'], bluefilter['LowValue']])
+        upper_blue = np.array([bluefilter['HighHue'], bluefilter['HighSaturation'], bluefilter['HighValue']])
 
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, lower_blue, upper_blue)
         # mask = cv2.bitwise_not(mask)
         img = cv2.bitwise_and(img, img, mask=mask)
-
+        return img
         kernel = np.ones((5, 5), np.uint8)
         mask = cv2.erode(mask, None, iterations=3)
         # cv2.imshow("blue3", mask)
