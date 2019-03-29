@@ -6,6 +6,7 @@ from time import sleep
 
 from Localisation import localise
 
+
 class Vision:
 
     def __init__(self, pipe=None):
