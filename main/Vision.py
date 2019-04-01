@@ -43,19 +43,19 @@ class Vision:
         self.bluefilter = {'LowHue': 48, 'LowSaturation': 36, 'LowValue': 104, 'HighHue': 147, 'HighSaturation': 147, 'HighValue': 255}
 
         for idx in range(0, 6, 1):
-            cv2.createTrackbar(self.greenfilter.items()[idx][0], 'greenfilter', self.greenfilter.items()[idx][1], 255, self.callback)
-            cv2.createTrackbar(self.redfilter.items()[idx][0], 'redfilter', self.redfilter.items()[idx][1], 255, self.callback)
-            cv2.createTrackbar(self.bluefilter.items()[idx][0], 'bluefilter', self.bluefilter.items()[idx][1], 255, self.callback)
+            cv2.createTrackbar(list(self.greenfilter.items())[idx][0], 'greenfilter', list(self.greenfilter.items())[idx][1], 255, self.callback)
+            cv2.createTrackbar(list(self.redfilter.items())[idx][0], 'redfilter', list(self.redfilter.items())[idx][1], 255, self.callback)
+            cv2.createTrackbar(list(self.bluefilter.items())[idx][0], 'bluefilter', list(self.bluefilter.items())[idx][1], 255, self.callback)
 
         loc = Localise()
-        print(self.greenfilter.items()[0][0])
+        print(list(self.greenfilter.items())[0][0])
         while True:
             frame = self.pipe.recv()
 
             for idx in range(0, 6, 1):
-                self.greenfilter[self.greenfilter.items()[idx][0]] = cv2.getTrackbarPos(self.greenfilter.items()[idx][0], 'greenfilter')
-                self.redfilter[self.redfilter.items()[idx][0]] = cv2.getTrackbarPos(self.redfilter.items()[idx][0], 'redfilter')
-                self.bluefilter[self.bluefilter.items()[idx][0]] = cv2.getTrackbarPos(self.bluefilter.items()[idx][0], 'bluefilter')
+                self.greenfilter[list(self.greenfilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.greenfilter.items())[idx][0], 'greenfilter')
+                self.redfilter[list(self.redfilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.redfilter.items())[idx][0], 'redfilter')
+                self.bluefilter[list(self.bluefilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.bluefilter.items())[idx][0], 'bluefilter')
 
             gframe = loc.filter_out_green(frame, self.greenfilter)
             rframe = loc.filter_out_red(frame, self.redfilter)
