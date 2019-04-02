@@ -3,21 +3,21 @@ import numpy as np
 
 def get_calibration_coords(img):
 
-    lower_green = np.array([155, 60, 20])
-    upper_green = np.array([200, 255, 255])
+    lower = np.array([153, 147, 0])
+    upper = np.array([194, 255, 255])
 
     # cv2.imwrite('test.jpeg', im)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     # cv2.imshow("test1", hsv)
     # cv2.waitKey(0)
     # Threshold the HSV image to get only blue colors
-    mask = cv2.inRange(hsv, lower_green, upper_green)
+    mask = cv2.inRange(hsv, lower, upper)
     img = cv2.bitwise_and(img, img, mask=mask)
-    # cv2.imshow("test2", img)
+    cv2.imshow("test2", img)
     # cv2.waitKey(0)
     kernel = np.ones((6, 6), np.uint8)
     mask = cv2.erode(mask, None, iterations=2)
-    # cv2.imshow("test3", mask)
+    cv2.imshow("test3", mask)
     # cv2.waitKey(0)
     kernel = np.ones((5, 5), np.uint8)
     mask = cv2.dilate(mask, kernel, iterations=2)
@@ -41,8 +41,8 @@ def get_calibration_coords(img):
         try:
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
-            # coords.insert(0,(cX,cY))
-            coords.append((cX,cY))
+            coords.insert(0,(cX,cY))
+            # coords.append((cX,cY))
 
         except Exception as e:
             break
