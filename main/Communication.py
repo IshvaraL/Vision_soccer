@@ -18,7 +18,7 @@ class Comm:
     def send(self, message):
         # data = pickle.dumps(message)
         data = str(message)
-        print(data)
+        # print(data)
         self.s.send(data.encode())
         self.s.send(b'<EOF>')
 

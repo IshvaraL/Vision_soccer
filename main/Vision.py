@@ -16,10 +16,11 @@ class Vision:
 
         self.greenfilter = {'LowHue': 27, 'LowSaturation': 50, 'LowValue': 50, 'HighHue': 50, 'HighSaturation': 255,
                             'HighValue': 220}
-        self.redfilter = {'LowHue': 0, 'LowSaturation': 200, 'LowValue': 0, 'HighHue': 25, 'HighSaturation': 255,
-                          'HighValue': 255}
-        self.bluefilter = {'LowHue': 87, 'LowSaturation': 62, 'LowValue': 64, 'HighHue': 150, 'HighSaturation': 255, 'HighValue': 255}
-        pass
+        # self.redfilter = {'LowHue': 0, 'LowSaturation': 200, 'LowValue': 0, 'HighHue': 25, 'HighSaturation': 255, 'HighValue': 255}
+        # self.bluefilter = {'LowHue': 87, 'LowSaturation': 62, 'LowValue': 64, 'HighHue': 150, 'HighSaturation': 255, 'HighValue': 255}
+
+        self.redfilter = {'LowHue': 0, 'LowSaturation': 100, 'LowValue': 79, 'HighHue': 19, 'HighSaturation': 255, 'HighValue': 255}
+        self.bluefilter = {'LowHue': 92, 'LowSaturation': 155, 'LowValue': 0, 'HighHue': 126, 'HighSaturation': 255, 'HighValue': 255}
 
     def run(self):
         print("Starting process vision")
@@ -102,7 +103,8 @@ class Vision:
     def main_program(self):
         loc = Localise()
         img2d = cv2.imread('../pics/soccerfield_2d.png', 1)
-        img2d = cv2.resize(img2d, (0, 0), fx=1.5, fy=1.5)
+        img2d = cv2.resize(img2d, (0, 0), fx=2, fy=2)
+        cv2.imshow("field", img2d)
         height, width, cols = img2d.shape
         while True:
             frame = self.stream_pipe.recv()
