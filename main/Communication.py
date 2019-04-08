@@ -3,7 +3,8 @@ import time
 import pickle
 
 HOST = "127.0.0.1"
-PORT = 5005
+# PORT = 5005
+PORT = 11000
 
 
 class Comm:
@@ -15,8 +16,11 @@ class Comm:
         time.sleep(0.5)
 
     def send(self, message):
-        data = pickle.dumps(message)
-        self.s.send(data)
+        # data = pickle.dumps(message)
+        data = str(message)
+        print(data)
+        self.s.send(data.encode())
+        self.s.send(b'<EOF>')
 
 
 if __name__ == "__main__":

@@ -25,7 +25,7 @@ if __name__ == "__main__":
     while True:
         team_coords = comm_parent_conn.recv()
 
-        msg = list(team_coords.items())
+        msg = team_coords
         comm.send(msg)
 
         # time.sleep(1)

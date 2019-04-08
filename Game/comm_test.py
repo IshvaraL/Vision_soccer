@@ -30,7 +30,11 @@ while True:
             if not data:
                 break
             else:
-                message = pickle.loads(data)
+                try:
+                    message = pickle.loads(data)
+                except EOFError:
+                    message = {}
+
                 print(message)
                 print("")
                 img2d = img2d_clean.copy()
@@ -45,6 +49,7 @@ while True:
 
                 print("")
                 cv2.imshow("test", img2d)
+
 
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break

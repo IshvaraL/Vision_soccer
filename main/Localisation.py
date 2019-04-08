@@ -102,6 +102,10 @@ class Localise:
             except Exception as e:
                 break
 
+        if len(coords) < 4 :
+            for x in range(len(coords), 4, 1):
+                coords.append((0, 0))
+
         return img, coords
 
     def filter_out_blue(self, img, bluefilter):
@@ -150,9 +154,13 @@ class Localise:
             try:
                 cX = int(M["m10"] / M["m00"])
                 cY = int(M["m01"] / M["m00"])
-                coords.insert(0, (cX, cY))
+                coords.append((cX, cY))
 
             except Exception as e:
                 break
+
+        if len(coords) < 4:
+            for x in range(len(coords), 4, 1):
+                coords.append((0, 0))
 
         return img, coords

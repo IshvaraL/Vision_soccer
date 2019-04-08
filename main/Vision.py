@@ -84,6 +84,21 @@ class Vision:
             self.bluefilter[list(self.bluefilter.items())[idx][0]] = cv2.getTrackbarPos(
                 list(self.bluefilter.items())[idx][0], 'bluefilter')
 
+    def max_rgb_filter(self, image):
+        # split the image into its BGR components
+        (B, G, R) = cv2.split(image)
+
+        # find the maximum pixel intensity values for each
+        # (x, y)-coordinate,, then set all pixel values less
+        # than M to zero
+        M = np.maximum(np.maximum(R, G), B)
+        R[R < M] = 0
+        G[G < M] = 0
+        B[B < M] = 0
+
+        # merge the channels back together and return the image
+        return cv2.merge([B, G, R])
+
     def main_program(self):
         loc = Localise()
         img2d = cv2.imread('../pics/soccerfield_2d.png', 1)
