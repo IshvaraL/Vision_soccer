@@ -13,7 +13,7 @@ if __name__ == "__main__":
     stream = Stream(stream_child_conn)
     vision = Vision(stream_parent_conn, comm_child_conn)
 
-    comm = Comm()
+    # comm = Comm()
 
     str = mp.Process(target=stream.run, args=())
     vis = mp.Process(target=vision.run, args=())
@@ -26,7 +26,7 @@ if __name__ == "__main__":
         team_coords = comm_parent_conn.recv()
 
         msg = team_coords
-        comm.send(msg)
+        # comm.send(msg)
 
         # time.sleep(1)
 

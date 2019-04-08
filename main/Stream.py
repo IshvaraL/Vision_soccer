@@ -1,6 +1,6 @@
 import multiprocessing as mp
 import cv2
-from time import sleep
+import time
 import datetime
 
 class Stream:
@@ -8,6 +8,7 @@ class Stream:
     def __init__(self, pipe=None):
         self.pipe = pipe
         self.out = None
+        self.lasttime = 0
         pass
 
     def run(self):
@@ -23,10 +24,13 @@ class Stream:
         if cap.isOpened() is False:
             return
         now = datetime.datetime.now()
-        self.out = cv2.VideoWriter('../rec/stream_' + now.strftime("%Y-%m-%d_%H-%M-%S") + ".avi" , cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (int(cap.get(3)), int(cap.get(4))))
+        self.out = cv2.VideoWriter('../rec/stream_' + now.strftime("%Y-%m-%d_%H-%M-%S") + ".avi" , cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 12, (int(cap.get(3)), int(cap.get(4))))
         while True:
-
             ret, frame = cap.read()
+
+            fps = 1000000000.0 / (time.time_ns() - self.lasttime)
+            self.lasttime = time.time_ns()
+            print("Fps:", fps)
 
             resized = cv2.resize(frame, None, fx=0.6, fy=0.6)
 
