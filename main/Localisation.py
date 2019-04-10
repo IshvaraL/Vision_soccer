@@ -16,7 +16,9 @@ class Localise:
         upper_green = np.array([greenfilter['HighHue'], greenfilter['HighSaturation'], greenfilter['HighValue']])
 
         # cv2.imwrite('test.jpeg', im)
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+        # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         # cv2.imshow("test1", hsv)
         # cv2.waitKey(0)
         # Threshold the HSV image to get only blue colors
@@ -39,7 +41,7 @@ class Localise:
         # cv2.imshow("test7", mask)
         # cv2.waitKey(0)
 
-        # mask = cv2.bitwise_not(mask)
+        mask = cv2.bitwise_not(mask)
 
         img = cv2.bitwise_and(img, img, mask = mask)
 
@@ -68,6 +70,8 @@ class Localise:
         upper_red = np.array([redfilter['HighHue'], redfilter['HighSaturation'], redfilter['HighValue']])
 
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+        # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         mask = cv2.inRange(hsv, lower_red, upper_red)
         # mask = cv2.bitwise_not(mask)
         img = cv2.bitwise_and(img, img, mask=mask)
@@ -117,6 +121,8 @@ class Localise:
 
         # img = cv2.blur(img,(10,10))
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+        # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         mask = cv2.inRange(hsv, lower_blue, upper_blue)
         # mask = cv2.bitwise_not(mask)
         img = cv2.bitwise_and(img, img, mask=mask)

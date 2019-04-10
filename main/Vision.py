@@ -14,12 +14,13 @@ class Vision:
         self.stream_pipe = stream_pipe
         self.comm_pipe = comm_pipe
 
-        self.greenfilter = {'LowHue': 27, 'LowSaturation': 50, 'LowValue': 50, 'HighHue': 50, 'HighSaturation': 255,
-                            'HighValue': 220}
+        # self.greenfilter = {'LowHue': 27, 'LowSaturation': 50, 'LowValue': 50, 'HighHue': 50, 'HighSaturation': 255, 'HighValue': 220}
         # self.redfilter = {'LowHue': 0, 'LowSaturation': 200, 'LowValue': 0, 'HighHue': 25, 'HighSaturation': 255, 'HighValue': 255}
         # self.bluefilter = {'LowHue': 87, 'LowSaturation': 62, 'LowValue': 64, 'HighHue': 150, 'HighSaturation': 255, 'HighValue': 255}
 
-        self.redfilter = {'LowHue': 0, 'LowSaturation': 100, 'LowValue': 79, 'HighHue': 19, 'HighSaturation': 255, 'HighValue': 255}
+        self.greenfilter = {'LowHue': 36, 'LowSaturation': 23, 'LowValue': 47, 'HighHue': 48, 'HighSaturation': 153, 'HighValue': 203}
+        # self.redfilter = {'LowHue': 0, 'LowSaturation': 100, 'LowValue': 79, 'HighHue': 19, 'HighSaturation': 255, 'HighValue': 255}
+        self.redfilter = {'LowHue': 0, 'LowSaturation': 179, 'LowValue': 0, 'HighHue': 179, 'HighSaturation': 255, 'HighValue': 217}
         self.bluefilter = {'LowHue': 92, 'LowSaturation': 155, 'LowValue': 0, 'HighHue': 126, 'HighSaturation': 255, 'HighValue': 255}
 
     def run(self):
@@ -28,7 +29,7 @@ class Vision:
             print("There is no pipe\nExiting now...")
             return
 
-        # cv2.namedWindow('greenfilter')
+        cv2.namedWindow('greenfilter')
         cv2.namedWindow('redfilter')
         cv2.namedWindow('bluefilter')
 
@@ -37,9 +38,9 @@ class Vision:
             cv2.createTrackbar(list(self.redfilter.items())[idx][0], 'redfilter', list(self.redfilter.items())[idx][1], 255, self.callback)
             cv2.createTrackbar(list(self.bluefilter.items())[idx][0], 'bluefilter', list(self.bluefilter.items())[idx][1], 255, self.callback)
 
-        self.main_program()
+        # self.main_program()
 
-        # self.test()
+        self.test()
 
         cv2.destroyAllWindows()
         return
@@ -48,12 +49,11 @@ class Vision:
         print('Green:', self.greenfilter)
         print('Red:', self.redfilter)
         print('Blue:', self.bluefilter)
-        pass
 
     def test(self):
         loc = Localise()
         while True:
-            frame = self.pipe.recv()
+            frame = self.stream_pipe.recv()
 
             for idx in range(0, 6, 1):
                 self.greenfilter[list(self.greenfilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.greenfilter.items())[idx][0], 'greenfilter')
@@ -61,8 +61,8 @@ class Vision:
                 self.bluefilter[list(self.bluefilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.bluefilter.items())[idx][0], 'bluefilter')
 
             gframe = loc.filter_out_green(frame, self.greenfilter)
-            rframe = loc.filter_out_red(frame, self.redfilter)
-            bframe = loc.filter_out_blue(frame, self.bluefilter)
+            rframe, _ = loc.filter_out_red(gframe, self.redfilter)
+            bframe, _ = loc.filter_out_blue(gframe, self.bluefilter)
 
             img = cv2.bitwise_or(rframe, bframe)
 
