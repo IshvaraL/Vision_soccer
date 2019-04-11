@@ -16,8 +16,8 @@ class Localise:
         upper_green = np.array([greenfilter['HighHue'], greenfilter['HighSaturation'], greenfilter['HighValue']])
 
         # cv2.imwrite('test.jpeg', im)
-        # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
         # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         # cv2.imshow("test1", hsv)
         # cv2.waitKey(0)
@@ -132,18 +132,18 @@ class Localise:
         # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(6,6))
         # mask = cv2.erode(mask, kernel, iterations=3)
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-        cv2.imshow('blue3', mask)
+        # cv2.imshow('blue3', mask)
 
         kernel = np.ones((2, 2), np.uint8)
         mask = cv2.erode(mask, kernel, iterations=2)
         # mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-        cv2.imshow("blue4", mask)
+        # cv2.imshow("blue4", mask)
 
         # cv2.waitKey(0)
         kernel = np.ones((5, 5), np.uint8)
         # mask = cv2.dilate(mask, kernel, iterations=2)
         mask = cv2.morphologyEx(mask, cv2.MORPH_GRADIENT, kernel)
-        cv2.imshow("blue5", mask)
+        # cv2.imshow("blue5", mask)
 
         # cv2.waitKey(0)
         mask = cv2.Canny(mask, 100, 200)

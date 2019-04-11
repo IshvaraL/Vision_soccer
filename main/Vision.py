@@ -20,8 +20,13 @@ class Vision:
 
         self.greenfilter = {'LowHue': 36, 'LowSaturation': 23, 'LowValue': 47, 'HighHue': 48, 'HighSaturation': 153, 'HighValue': 203}
         # self.redfilter = {'LowHue': 0, 'LowSaturation': 100, 'LowValue': 79, 'HighHue': 19, 'HighSaturation': 255, 'HighValue': 255}
-        self.redfilter = {'LowHue': 0, 'LowSaturation': 179, 'LowValue': 0, 'HighHue': 179, 'HighSaturation': 255, 'HighValue': 217}
-        self.bluefilter = {'LowHue': 92, 'LowSaturation': 155, 'LowValue': 0, 'HighHue': 126, 'HighSaturation': 255, 'HighValue': 255}
+        # self.redfilter = {'LowHue': 0, 'LowSaturation': 179, 'LowValue': 0, 'HighHue': 179, 'HighSaturation': 255, 'HighValue': 217}
+        # self.bluefilter = {'LowHue': 92, 'LowSaturation': 155, 'LowValue': 0, 'HighHue': 126, 'HighSaturation': 255, 'HighValue': 255}
+
+        self.redfilter = {'LowHue': 0, 'LowSaturation': 213, 'LowValue': 226, 'HighHue': 11, 'HighSaturation': 255,
+              'HighValue': 255}
+        self.bluefilter = {'LowHue': 88, 'LowSaturation': 179, 'LowValue': 110, 'HighHue': 120, 'HighSaturation': 255,
+               'HighValue': 175}
 
     def run(self):
         print("Starting process vision")
