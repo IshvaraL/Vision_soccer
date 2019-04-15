@@ -17,28 +17,29 @@ if __name__ == "__main__":
 
     str = mp.Process(target=stream.run, args=())
     vis = mp.Process(target=vision.run, args=())
-    vis.start()
     str.start()
-
-
+    time.sleep(1)
+    vis.start()
 
     while True:
-        team_coords = comm_parent_conn.recv()
-
-        msg = team_coords
-        # comm.send(msg)
-
-        # time.sleep(1)
-
-        if vis.is_alive() is False:
+        if not vis.is_alive():
             print("vis died")
             str.terminate()
             str.join()
             break
 
-        if str.is_alive() is False:
+        if not str.is_alive():
             print("str died")
             vis.terminate()
             vis.join()
             break
+
+        if comm_parent_conn.poll(1):
+            team_coords = comm_parent_conn.recv()
+
+        # msg = team_coords
+        # comm.send(msg)
+
+        # time.sleep(1)
+
 

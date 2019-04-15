@@ -47,6 +47,8 @@ class Vision:
 
         self.test()
 
+        self.stream_pipe.close()
+        self.comm_pipe.close()
         cv2.destroyAllWindows()
         return
 
@@ -59,7 +61,6 @@ class Vision:
         loc = Localise()
         while True:
             frame = self.stream_pipe.recv()
-
             for idx in range(0, 6, 1):
                 self.greenfilter[list(self.greenfilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.greenfilter.items())[idx][0], 'greenfilter')
                 self.redfilter[list(self.redfilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.redfilter.items())[idx][0], 'redfilter')
