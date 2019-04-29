@@ -18,15 +18,13 @@ class Vision:
         # self.redfilter = {'LowHue': 0, 'LowSaturation': 200, 'LowValue': 0, 'HighHue': 25, 'HighSaturation': 255, 'HighValue': 255}
         # self.bluefilter = {'LowHue': 87, 'LowSaturation': 62, 'LowValue': 64, 'HighHue': 150, 'HighSaturation': 255, 'HighValue': 255}
 
-        self.greenfilter = {'LowHue': 36, 'LowSaturation': 23, 'LowValue': 47, 'HighHue': 48, 'HighSaturation': 153, 'HighValue': 203}
+        self.greenfilter = {'LowHue': 12, 'LowSaturation': 0, 'LowValue': 0, 'HighHue': 83, 'HighSaturation': 150, 'HighValue': 59}
         # self.redfilter = {'LowHue': 0, 'LowSaturation': 100, 'LowValue': 79, 'HighHue': 19, 'HighSaturation': 255, 'HighValue': 255}
         # self.redfilter = {'LowHue': 0, 'LowSaturation': 179, 'LowValue': 0, 'HighHue': 179, 'HighSaturation': 255, 'HighValue': 217}
         # self.bluefilter = {'LowHue': 92, 'LowSaturation': 155, 'LowValue': 0, 'HighHue': 126, 'HighSaturation': 255, 'HighValue': 255}
 
-        self.redfilter = {'LowHue': 0, 'LowSaturation': 213, 'LowValue': 226, 'HighHue': 11, 'HighSaturation': 255,
-              'HighValue': 255}
-        self.bluefilter = {'LowHue': 88, 'LowSaturation': 179, 'LowValue': 110, 'HighHue': 120, 'HighSaturation': 255,
-               'HighValue': 175}
+        self.redfilter = {'LowHue': 0, 'LowSaturation': 205, 'LowValue': 214, 'HighHue': 5, 'HighSaturation': 255, 'HighValue': 254}
+        self.bluefilter = {'LowHue': 92, 'LowSaturation': 176, 'LowValue': 120, 'HighHue': 114, 'HighSaturation': 255, 'HighValue': 255}
 
     def run(self):
         print("Starting process vision")
@@ -34,9 +32,9 @@ class Vision:
             print("There is no pipe\nExiting now...")
             return
 
-        cv2.namedWindow('greenfilter')
-        cv2.namedWindow('redfilter')
-        cv2.namedWindow('bluefilter')
+        cv2.namedWindow('greenfilter', cv2.WINDOW_FREERATIO)
+        cv2.namedWindow('redfilter', )
+        cv2.namedWindow('bluefilter', )
 
         for idx in range(0, 6, 1):
             cv2.createTrackbar(list(self.greenfilter.items())[idx][0], 'greenfilter', list(self.greenfilter.items())[idx][1], 255, self.callback)
@@ -67,8 +65,8 @@ class Vision:
                 self.bluefilter[list(self.bluefilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.bluefilter.items())[idx][0], 'bluefilter')
 
             gframe = loc.filter_out_green(frame, self.greenfilter)
-            rframe, _ = loc.filter_out_red(gframe, self.redfilter)
-            bframe, _ = loc.filter_out_blue(gframe, self.bluefilter)
+            rframe, coordsRed = loc.filter_out_red(gframe, self.redfilter)
+            bframe, coordsBlue = loc.filter_out_blue(gframe, self.bluefilter)
 
             img = cv2.bitwise_or(rframe, bframe)
 
@@ -78,6 +76,9 @@ class Vision:
             cv2.imshow('redfilter', rframe)
             cv2.imshow('bluefilter', bframe)
 
+            team_coords = {0: coordsBlue, 1: coordsRed}
+
+            self.comm_pipe.send(team_coords)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break

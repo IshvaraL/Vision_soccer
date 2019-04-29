@@ -37,7 +37,8 @@ if __name__ == "__main__":
         if comm_parent_conn.poll(1):
             team_coords = comm_parent_conn.recv()
 
-        # msg = team_coords
+        msg = team_coords
+        # print(msg)
         # comm.send(msg)
 
         # time.sleep(1)

@@ -69,10 +69,17 @@ class Localise:
         lower_red = np.array([redfilter['LowHue'], redfilter['LowSaturation'], redfilter['LowValue']])
         upper_red = np.array([redfilter['HighHue'], redfilter['HighSaturation'], redfilter['HighValue']])
 
+        lower_pink = np.array([166, 197, 169])
+        upper_pink = np.array([183, 255, 255])
+
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
         # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        mask = cv2.inRange(hsv, lower_red, upper_red)
+        maskr = cv2.inRange(hsv, lower_red, upper_red)
+        maskp = cv2.inRange(hsv, lower_pink, upper_pink)
+
+        mask = cv2.bitwise_or(maskr, maskp)
+
         # mask = cv2.bitwise_not(mask)
         img = cv2.bitwise_and(img, img, mask=mask)
 

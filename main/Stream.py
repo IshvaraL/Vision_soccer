@@ -4,6 +4,8 @@ import cv2
 import time
 import datetime
 
+save = True
+
 
 class Stream:
 
@@ -19,7 +21,7 @@ class Stream:
             print("There is no pipe\n exiting now...")
             return
 
-        # cap = cv2.VideoCapture('../res/test.mkv')
+        # self.cap = cv2.VideoCapture('../rec/stream_2019-04-29_10-10-03.avi')
         self.cap = cv2.VideoCapture('http://root:pass@10.28.40.98/axis-cgi/mjpg/video.cgi?streamprofile=Soccer&videokeyframeinterval=')
         if self.cap.isOpened() is False:
             return
@@ -53,8 +55,10 @@ class Stream:
         update = 31
         strfps = 0
         now = datetime.datetime.now()
-        self.out = cv2.VideoWriter('../rec/stream_' + now.strftime("%Y-%m-%d_%H-%M-%S") + ".avi",
-                                   cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 70,
+
+        if save:
+            self.out = cv2.VideoWriter('../rec/stream_' + now.strftime("%Y-%m-%d_%H-%M-%S") + ".avi",
+                                   cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 60,
                                    (int(self.cap.get(3)), int(self.cap.get(4))))
 
         while True:
@@ -68,6 +72,9 @@ class Stream:
             frame = self.videoframe.copy()
             self.lock.release()
 
+            if save:
+                save_frame = frame.copy()
+
             if update > 30:
                 update = 0
                 strfps = str(fps)
@@ -75,7 +82,8 @@ class Stream:
 
             if frame is not None:
                 cv2.putText(frame, strfps, (10, 80), cv2.FONT_HERSHEY_PLAIN, 4, (0, 0, 255), 4, 2)
-                self.out.write(frame)
+                if save:
+                    self.out.write(save_frame)
                 cv2.imshow('frame', frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
