@@ -8,6 +8,9 @@ from Localisation import Localise
 from Calibration import get_calibration_coords
 from Calibration import manual_calibrate
 
+#https://medium.com/@kananvyas/player-and-football-detection-using-opencv-python-in-fifa-match-6fd2e4e373f0
+#https://towardsdatascience.com/analyse-a-soccer-game-using-tensorflow-object-detection-and-opencv-e321c230e8f2
+
 
 class Vision:
 
