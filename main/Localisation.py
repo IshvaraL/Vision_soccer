@@ -74,7 +74,7 @@ class Localise:
 
         for c in contours:
             x, y, w, h = cv2.boundingRect(c)
-            # cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 0), 3)
+            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 0), 3)
             # Detect players
             if (h >= (1.2) * w):
                 if (w > 10 and h >= 40):
