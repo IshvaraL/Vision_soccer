@@ -45,9 +45,9 @@ class Vision:
             cv2.createTrackbar(list(self.redfilter.items())[idx][0], 'redfilter', list(self.redfilter.items())[idx][1], 255, self.callback)
             cv2.createTrackbar(list(self.bluefilter.items())[idx][0], 'bluefilter', list(self.bluefilter.items())[idx][1], 255, self.callback)
 
-        self.main_program()
+        # self.main_program()
 
-        # self.test()
+        self.test()
 
         self.stream_pipe.close()
         self.comm_pipe.close()
