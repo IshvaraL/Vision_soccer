@@ -12,8 +12,20 @@ class Localise:
         # lower_green = np.array([20, 50, 50])
         # upper_green = np.array([85, 255, 220])
 
-        lower_green = np.array([greenfilter['LowHue'], greenfilter['LowSaturation'], greenfilter['LowValue']])
-        upper_green = np.array([greenfilter['HighHue'], greenfilter['HighSaturation'], greenfilter['HighValue']])
+        lower_green = np.array([35, 15, 15])
+        upper_green = np.array([90, 255, 255])
+
+        lower_red = np.array([0, 60, 70])
+        upper_red = np.array([35, 180, 180])
+
+        lower_blue = np.array([70, 40, 40])
+        upper_blue = np.array([140, 255, 255])
+
+        count = 0
+        idx = 0
+
+        # lower_green = np.array([greenfilter['LowHue'], greenfilter['LowSaturation'], greenfilter['LowValue']])
+        # upper_green = np.array([greenfilter['HighHue'], greenfilter['HighSaturation'], greenfilter['HighValue']])
 
         # cv2.imwrite('test.jpeg', im)
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -41,25 +53,69 @@ class Localise:
         # cv2.imshow("test7", mask)
         # cv2.waitKey(0)
 
-        mask = cv2.bitwise_not(mask)
+        res = cv2.bitwise_and(img, img, mask=mask)
 
-        img = cv2.bitwise_and(img, img, mask = mask)
+        res = cv2.blur(res, (2,2))
 
-        # cnts, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        # coords = []
-        #
-        # # loop over the contours
-        # for c in cnts:
-        #     # compute the center of the contour
-        #     M = cv2.moments(c)
-        #     try:
-        #         cX = int(M["m10"] / M["m00"])
-        #         cY = int(M["m01"] / M["m00"])
-        #         coords.insert(0, (cX, cY))
-        #
-        #     except Exception as e:
-        #         break
-        # return coords
+        res_bgr = cv2.cvtColor(res, cv2.COLOR_HSV2BGR)
+        res_gray = cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
+        cv2.imshow("res grey", res_gray)
+        cv2.imshow("res", res)
+
+        kernel = np.ones((2, 2), np.uint8)
+        thresh = cv2.threshold(res_gray, 10, 255, cv2.THRESH_BINARY_INV)[1]
+        cv2.imshow("thresh1", thresh)
+        thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
+        cv2.imshow("thresh2", thresh)
+
+        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        prev = 0
+        font = cv2.FONT_HERSHEY_SIMPLEX
+
+        for c in contours:
+            x, y, w, h = cv2.boundingRect(c)
+            # cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 0), 3)
+            # Detect players
+            if (h >= (1.2) * w):
+                if (w > 10 and h >= 40):
+                    idx = idx + 1
+                    player_img = img[y:y + h, x:x + w]
+                    cv2.imshow("players", player_img)
+                    player_hsv = cv2.cvtColor(player_img, cv2.COLOR_BGR2HSV)
+                    # If player has blue jersy
+                    mask1 = cv2.inRange(player_hsv, lower_blue, upper_blue)
+                    res1 = cv2.bitwise_and(player_img, player_img, mask=mask1)
+                    res1 = cv2.cvtColor(res1, cv2.COLOR_HSV2BGR)
+                    res1 = cv2.cvtColor(res1, cv2.COLOR_BGR2GRAY)
+                    nzCount = cv2.countNonZero(res1)
+                    # print("blue", nzCount)
+                    # If player has red jersy
+                    mask2 = cv2.inRange(player_hsv, lower_red, upper_red)
+                    res2 = cv2.bitwise_and(player_img, player_img, mask=mask2)
+                    res2 = cv2.cvtColor(res2, cv2.COLOR_HSV2BGR)
+                    res2 = cv2.cvtColor(res2, cv2.COLOR_BGR2GRAY)
+                    nzCountred = cv2.countNonZero(res2)
+                    # print("red", nzCountred)
+
+                    if (nzCount >= 60):
+                        # Mark blue jersy players as france
+                        # cv2.putText(img, 'France', (x - 2, y - 2), font, 0.8, (255, 0, 0), 2, cv2.LINE_AA)
+                        cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 3)
+                        blue_player_posX = x + int(w / 2)
+                        blue_player_posY = y + h
+                        cv2.circle(img, (blue_player_posX, blue_player_posY), 2, (0, 0, 0), 3)
+                    else:
+                        pass
+                    if (nzCountred >= 40):
+                        # Mark red jersy players as belgium
+                        # cv2.putText(img, 'Belgium', (x - 2, y - 2), font, 0.8, (0, 0, 255), 2, cv2.LINE_AA)
+                        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 3)
+                        red_player_posX = x + int(w/2)
+                        red_player_posY = y + h
+                        cv2.circle(img, (red_player_posX, red_player_posY), 2, (0, 0, 0), 3)
+                    else:
+                        pass
+
         return img
 
     def filter_out_red(self, img, redfilter):

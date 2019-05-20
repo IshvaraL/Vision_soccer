@@ -69,20 +69,20 @@ class Vision:
                 self.bluefilter[list(self.bluefilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.bluefilter.items())[idx][0], 'bluefilter')
 
             gframe = loc.filter_out_green(frame, self.greenfilter)
-            rframe, coordsRed = loc.filter_out_red(gframe, self.redfilter)
-            bframe, coordsBlue = loc.filter_out_blue(gframe, self.bluefilter)
+            # rframe, coordsRed = loc.filter_out_red(gframe, self.redfilter)
+            # bframe, coordsBlue = loc.filter_out_blue(gframe, self.bluefilter)
 
-            img = cv2.bitwise_or(rframe, bframe)
+            # img = cv2.bitwise_or(rframe, bframe)
 
-            cv2.imshow('total', img)
+            # cv2.imshow('total', img)
 
             cv2.imshow('greenfilter', gframe)
-            cv2.imshow('redfilter', rframe)
-            cv2.imshow('bluefilter', bframe)
+            # cv2.imshow('redfilter', rframe)
+            # cv2.imshow('bluefilter', bframe)
 
-            team_coords = {0: coordsBlue, 1: coordsRed}
+            # team_coords = {0: coordsBlue, 1: coordsRed}
 
-            self.comm_pipe.send(team_coords)
+            # self.comm_pipe.send(team_coords)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
