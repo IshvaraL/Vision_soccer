@@ -20,7 +20,7 @@ if __name__ == "__main__":
     str.start()
     time.sleep(1)
     vis.start()
-
+    team_coords = None
     while True:
         if not vis.is_alive():
             print("vis died")
@@ -34,13 +34,15 @@ if __name__ == "__main__":
             vis.join()
             break
 
-        if comm_parent_conn.poll(1):
-            team_coords = comm_parent_conn.recv()
-
-        msg = team_coords
-        # print(msg)
-        # comm.send(msg)
-
-        # time.sleep(1)
+        # if comm_parent_conn.poll(1):
+        #     team_coords = comm_parent_conn.recv()
+        #
+        # if team_coords is not None:
+        #     msg = team_coords
+        #     print(msg)
+        #     comm.open()
+        #     comm.send(team_coords)
+        #     comm.close()
+        #     # time.sleep(0.5)
 
 

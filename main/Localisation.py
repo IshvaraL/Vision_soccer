@@ -65,7 +65,7 @@ class Localise:
     def filter_out_red(self, img, redfilter):
         # lower_red = np.array([0, 60, 70])
         # upper_red = np.array([35, 180, 180])
-
+        height, width, cols = img.shape
         lower_red = np.array([redfilter['LowHue'], redfilter['LowSaturation'], redfilter['LowValue']])
         upper_red = np.array([redfilter['HighHue'], redfilter['HighSaturation'], redfilter['HighValue']])
 
@@ -108,7 +108,9 @@ class Localise:
             try:
                 cX = int(M["m10"] / M["m00"])
                 cY = int(M["m01"] / M["m00"])
-                coords.insert(0, (cX, cY))
+                if len(coords) > 4:
+                    break
+                coords.insert(0, (cX/width, cY/height))
 
             except Exception as e:
                 break
@@ -122,7 +124,7 @@ class Localise:
     def filter_out_blue(self, img, bluefilter):
         # lower_blue = np.array([70, 40, 40])
         # upper_blue = np.array([140, 255, 255])
-
+        height, width, cols = img.shape
         lower_blue = np.array([bluefilter['LowHue'], bluefilter['LowSaturation'], bluefilter['LowValue']])
         upper_blue = np.array([bluefilter['HighHue'], bluefilter['HighSaturation'], bluefilter['HighValue']])
 
@@ -167,7 +169,9 @@ class Localise:
             try:
                 cX = int(M["m10"] / M["m00"])
                 cY = int(M["m01"] / M["m00"])
-                coords.append((cX, cY))
+                if len(coords) > 4:
+                    break
+                coords.insert(0, (cX/width, cY/height))
 
             except Exception as e:
                 break

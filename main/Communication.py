@@ -16,11 +16,23 @@ class Comm:
         time.sleep(0.5)
 
     def send(self, message):
-        # data = pickle.dumps(message)
+        # data = pickle.dumps(message + "<EOF>")
+        # data = b"Test<EOF>"
+        # data = base64.b64encode(pickle.dumps(message)).decode("utf-8")
         data = str(message)
-        # print(data)
+        print(data)
         self.s.send(data.encode())
         self.s.send(b'<EOF>')
+
+    def close(self):
+        self.s.close()
+        self.s = None
+
+    def open(self):
+        if self.s is None:
+          self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+          self.s.settimeout(10)
+          self.s.connect((HOST, PORT))
 
 
 if __name__ == "__main__":

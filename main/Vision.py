@@ -6,6 +6,7 @@ from time import sleep
 
 from Localisation import Localise
 from Calibration import get_calibration_coords
+from Calibration import manual_calibrate
 
 
 class Vision:
@@ -41,9 +42,9 @@ class Vision:
             cv2.createTrackbar(list(self.redfilter.items())[idx][0], 'redfilter', list(self.redfilter.items())[idx][1], 255, self.callback)
             cv2.createTrackbar(list(self.bluefilter.items())[idx][0], 'bluefilter', list(self.bluefilter.items())[idx][1], 255, self.callback)
 
-        # self.main_program()
+        self.main_program()
 
-        self.test()
+        # self.test()
 
         self.stream_pipe.close()
         self.comm_pipe.close()
@@ -109,19 +110,19 @@ class Vision:
 
     def main_program(self):
         loc = Localise()
-        img2d = cv2.imread('../pics/soccerfield_2d.png', 1)
-        img2d = cv2.resize(img2d, (0, 0), fx=2, fy=2)
-        cv2.imshow("field", img2d)
-        height, width, cols = img2d.shape
+        frame = self.stream_pipe.recv()
+        height, width, cols = frame.shape
+        self.coords_3d = manual_calibrate(frame)
         while True:
             frame = self.stream_pipe.recv()
-            self.coords_3d = get_calibration_coords(frame)
+            # self.coords_3d = get_calibration_coords(frame)
 
             if len(self.coords_3d) is 4:
                 pts_dst = np.float32([[0, 0], [width, 0], [0, height], [width, height]])
                 pts_src = np.float32(self.coords_3d)
                 self.matrix = cv2.getPerspectiveTransform(pts_src, pts_dst)
                 break
+
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
@@ -137,18 +138,20 @@ class Vision:
 
             cv2.imshow("warp", dst)
 
-            # gframe = loc.filter_out_green(dst, self.greenfilter)
+            gframe = loc.filter_out_green(dst, self.greenfilter)
             rframe, coordsRed = loc.filter_out_red(dst, self.redfilter)
             bframe, coordsBlue = loc.filter_out_blue(dst, self.bluefilter)
 
             img = cv2.bitwise_or(rframe, bframe)
             # img = cv2.bitwise_or(img, img_no_green)
 
-            # cv2.imshow('greenfilter', gframe)
+            img = cv2.bitwise_or(rframe, bframe)
+
+            cv2.imshow('total', img)
+
+            cv2.imshow('greenfilter', gframe)
             cv2.imshow('redfilter', rframe)
             cv2.imshow('bluefilter', bframe)
-
-            cv2.imshow("Total", img)
 
             team_coords = {0: coordsBlue, 1: coordsRed}
 
@@ -157,4 +160,3 @@ class Vision:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         return
-
