@@ -22,8 +22,8 @@ class Stream:
             return
 
         # self.cap = cv2.VideoCapture('../rec/stream_2019-04-29_10-10-03.avi')
-        # self.cap = cv2.VideoCapture('../rec/stream_2019-05-07_13-48-22.avi')
-        self.cap = cv2.VideoCapture('../rec/stream_2019-05-07_12-54-17.avi')
+        self.cap = cv2.VideoCapture('../rec/stream_2019-05-07_12-54-17_Trim.mp4')
+        # self.cap = cv2.VideoCapture('../rec/stream_2019-05-07_12-54-17.avi')
         # self.cap = cv2.VideoCapture('http://root:pass@10.42.80.102/axis-cgi/mjpg/video.cgi?streamprofile=Soccer&videokeyframeinterval=')
         if self.cap.isOpened() is False:
             return
@@ -36,13 +36,16 @@ class Stream:
         while True:
             _, frame = self.cap.read()
 
-            self.lock.acquire()
-            self.videoframe = frame
-            self.lock.release()
+            if frame is not None:
+                self.lock.acquire()
+                self.videoframe = frame
+                self.lock.release()
+            else:
+                break
 
             if not self.sendFrame.is_alive() or not self.showFrame.is_alive():
                 break
-            time.sleep(0.020)
+            # time.sleep(0.020)
         self.sendFrame.join()
         self.showFrame.join()
         self.cap.release()
@@ -86,10 +89,46 @@ class Stream:
                 cv2.putText(frame, strfps, (10, 80), cv2.FONT_HERSHEY_PLAIN, 4, (0, 0, 255), 4, 2)
                 if save:
                     self.out.write(save_frame)
-                cv2.imshow('frame', frame)
+                cv2.imshow('live', frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+
+    def increase_brightness(self, img, value=-30):
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(hsv)
+
+        lim = 255 - value
+        v[v > lim] = 255
+        v[v <= lim] += value
+
+        final_hsv = cv2.merge((h, s, v))
+        img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+        return img
+
+    def decrease_brightness(self, img, value=10):
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(hsv)
+
+        lim = 255 - value
+        v[v > lim] = 255
+        v[v <= lim] -= value
+
+        final_hsv = cv2.merge((h, s, v))
+        img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+        return img
+
+    def decrease_saturation(self, img, value=30):
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(hsv)
+
+        lim = 255 - value
+        s[s > lim] = 255
+        s[s <= lim] += value
+
+        final_hsv = cv2.merge((h, s, v))
+        img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+        return img
 
     def send(self):
         time.sleep(0.5)
@@ -97,6 +136,18 @@ class Stream:
             self.lock.acquire()
             frame = self.videoframe
             self.lock.release()
+
+            # frame = self.decrease_brightness(frame)
+            # frame = self.decrease_saturation(frame)
+
+            # hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  # convert it to hsv
+            #
+            # h, s, v = cv2.split(hsv)
+            # v -= 10
+            # h += 20
+            # final_hsv = cv2.merge((h, s, v))
+            #
+            # frame = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
 
             self.pipe.send(frame)
 

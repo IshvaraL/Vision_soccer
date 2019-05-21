@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import os
 # import imutilss
 import multiprocessing as mp
 from time import sleep
@@ -30,15 +31,21 @@ class Vision:
         self.redfilter = {'LowHue': 0, 'LowSaturation': 205, 'LowValue': 214, 'HighHue': 5, 'HighSaturation': 255, 'HighValue': 254}
         self.bluefilter = {'LowHue': 92, 'LowSaturation': 176, 'LowValue': 120, 'HighHue': 114, 'HighSaturation': 255, 'HighValue': 255}
 
+    def totuple(self, a):
+        try:
+            return tuple(self.totuple(i) for i in a)
+        except TypeError:
+            return a
+
     def run(self):
         print("Starting process vision")
         if self.stream_pipe is None:
             print("There is no pipe\nExiting now...")
             return
 
-        cv2.namedWindow('greenfilter', cv2.WINDOW_FREERATIO)
-        cv2.namedWindow('redfilter', )
-        cv2.namedWindow('bluefilter', )
+        cv2.namedWindow('greenfilter', )
+        # cv2.namedWindow('redfilter', )
+        # cv2.namedWindow('bluefilter', )
 
         for idx in range(0, 6, 1):
             cv2.createTrackbar(list(self.greenfilter.items())[idx][0], 'greenfilter', list(self.greenfilter.items())[idx][1], 255, self.callback)
@@ -61,6 +68,33 @@ class Vision:
 
     def test(self):
         loc = Localise()
+        frame = self.stream_pipe.recv()
+        ref = cv2.imread('../pics/soccerfield_2d.png')
+        height, width, cols = ref.shape
+        self.h = None
+        refClean = ref.copy()
+
+        try:
+            pts_src = np.load("../calibration_data/calibrated_3D.npy")
+            pts_dst = np.float32([[0, 0], [width, 0], [0, height], [width, height]])
+            self.h, status = cv2.findHomography(pts_src, pts_dst)
+        except Exception as e:
+            print(e)
+            self.coords_3d = manual_calibrate(frame)
+            while True:
+                frame = self.stream_pipe.recv()
+                # self.coords_3d = get_calibration_coords(frame)
+
+                if len(self.coords_3d) is 4:
+                    pts_dst = np.float32([[0, 0], [width, 0], [0, height], [width, height]])
+                    pts_src = np.float32(self.coords_3d)
+                    self.h, status = cv2.findHomography(pts_src, pts_dst)
+                    np.save("../calibration_data/calibrated_3D", pts_src)
+                    break
+
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+
         while True:
             frame = self.stream_pipe.recv()
             for idx in range(0, 6, 1):
@@ -68,13 +102,38 @@ class Vision:
                 self.redfilter[list(self.redfilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.redfilter.items())[idx][0], 'redfilter')
                 self.bluefilter[list(self.bluefilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.bluefilter.items())[idx][0], 'bluefilter')
 
-            gframe = loc.filter_out_green(frame, self.greenfilter)
+            gframe, coordsR, coordsB = loc.filter_out_green(frame, self.greenfilter)
             # rframe, coordsRed = loc.filter_out_red(gframe, self.redfilter)
             # bframe, coordsBlue = loc.filter_out_blue(gframe, self.bluefilter)
 
             # img = cv2.bitwise_or(rframe, bframe)
 
             # cv2.imshow('total', img)
+            dstRed = []
+            dstBlue = []
+
+            ref = refClean.copy()
+            for coord in coordsR:
+                a = np.array([[coord[0], coord[1]]], dtype='float32')
+                a = np.array([a])
+                dstR = cv2.perspectiveTransform(a, self.h)
+                dstRed.append(dstR)
+
+                cv2.circle(ref, self.totuple(dstR[0][0]), 5, (0, 0, 255), -1)
+
+            for coord in coordsB:
+                a = np.array([[coord[0], coord[1]]], dtype='float32')
+                a = np.array([a])
+                dstB = cv2.perspectiveTransform(a, self.h)
+                dstBlue.append(dstB)
+
+                cv2.circle(ref, self.totuple(dstB[0][0]), 5, (255, 0, 0), 1)
+
+
+            cv2.imshow("transform", ref)
+
+            # print("Red", dstRed)
+            # print("Blue", dstBlue)
 
             cv2.imshow('greenfilter', gframe)
             # cv2.imshow('redfilter', rframe)

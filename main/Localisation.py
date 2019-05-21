@@ -15,6 +15,9 @@ class Localise:
         lower_green = np.array([35, 15, 15])
         upper_green = np.array([90, 255, 255])
 
+        lower_green = np.array([30, 0, 0])
+        upper_green = np.array([95, 255, 255])
+
         lower_red = np.array([0, 60, 70])
         upper_red = np.array([35, 180, 180])
 
@@ -72,9 +75,12 @@ class Localise:
         prev = 0
         font = cv2.FONT_HERSHEY_SIMPLEX
 
+        coordsRed = []
+        coordsBlue = []
+
         for c in contours:
             x, y, w, h = cv2.boundingRect(c)
-            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 0), 3)
+            # cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 0), 3)
             # Detect players
             if (h >= (1.2) * w):
                 if (w > 10 and h >= 40):
@@ -100,10 +106,11 @@ class Localise:
                     if (nzCount >= 60):
                         # Mark blue jersy players as france
                         # cv2.putText(img, 'France', (x - 2, y - 2), font, 0.8, (255, 0, 0), 2, cv2.LINE_AA)
-                        cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 3)
+                        cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
                         blue_player_posX = x + int(w / 2)
                         blue_player_posY = y + h
                         cv2.circle(img, (blue_player_posX, blue_player_posY), 2, (0, 0, 0), 3)
+                        coordsBlue.append((blue_player_posX, blue_player_posY))
                     else:
                         pass
                     if (nzCountred >= 40):
@@ -112,11 +119,12 @@ class Localise:
                         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 3)
                         red_player_posX = x + int(w/2)
                         red_player_posY = y + h
-                        cv2.circle(img, (red_player_posX, red_player_posY), 2, (0, 0, 0), 3)
+                        cv2.circle(img, (red_player_posX, red_player_posY), 2, (0, 0, 0), 2)
+                        coordsRed.append((red_player_posX, red_player_posY))
                     else:
                         pass
 
-        return img
+        return img, coordsRed, coordsBlue
 
     def filter_out_red(self, img, redfilter):
         # lower_red = np.array([0, 60, 70])
