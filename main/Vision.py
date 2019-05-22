@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import os
 # import imutilss
 import multiprocessing as mp
 from time import sleep
@@ -11,6 +12,8 @@ from Calibration import manual_calibrate
 #https://medium.com/@kananvyas/player-and-football-detection-using-opencv-python-in-fifa-match-6fd2e4e373f0
 #https://towardsdatascience.com/analyse-a-soccer-game-using-tensorflow-object-detection-and-opencv-e321c230e8f2
 
+
+CropOffset = 40
 
 class Vision:
 
@@ -30,24 +33,30 @@ class Vision:
         self.redfilter = {'LowHue': 0, 'LowSaturation': 205, 'LowValue': 214, 'HighHue': 5, 'HighSaturation': 255, 'HighValue': 254}
         self.bluefilter = {'LowHue': 92, 'LowSaturation': 176, 'LowValue': 120, 'HighHue': 114, 'HighSaturation': 255, 'HighValue': 255}
 
+    def totuple(self, a):
+        try:
+            return tuple(self.totuple(i) for i in a)
+        except TypeError:
+            return a
+
     def run(self):
         print("Starting process vision")
         if self.stream_pipe is None:
             print("There is no pipe\nExiting now...")
             return
 
-        cv2.namedWindow('greenfilter', cv2.WINDOW_FREERATIO)
-        cv2.namedWindow('redfilter', )
-        cv2.namedWindow('bluefilter', )
+        cv2.namedWindow('greenfilter', )
+        # cv2.namedWindow('redfilter', )
+        # cv2.namedWindow('bluefilter', )
 
         for idx in range(0, 6, 1):
             cv2.createTrackbar(list(self.greenfilter.items())[idx][0], 'greenfilter', list(self.greenfilter.items())[idx][1], 255, self.callback)
             cv2.createTrackbar(list(self.redfilter.items())[idx][0], 'redfilter', list(self.redfilter.items())[idx][1], 255, self.callback)
             cv2.createTrackbar(list(self.bluefilter.items())[idx][0], 'bluefilter', list(self.bluefilter.items())[idx][1], 255, self.callback)
 
-        self.main_program()
+        # self.main_program()
 
-        # self.test()
+        self.test()
 
         self.stream_pipe.close()
         self.comm_pipe.close()
@@ -61,6 +70,34 @@ class Vision:
 
     def test(self):
         loc = Localise()
+        frame = self.stream_pipe.recv()
+        ref = cv2.imread('../pics/soccerfield_2d.png')
+        height, width, cols = ref.shape
+        self.h = None
+        pts_src = None
+        refClean = ref.copy()
+
+        try:
+            pts_src = np.load("../calibration_data/calibrated_3D.npy")
+            pts_dst = np.float32([[0, 0], [width, 0], [0, height], [width, height]])
+            self.h, status = cv2.findHomography(pts_src, pts_dst)
+        except Exception as e:
+            print(e)
+            self.coords_3d = manual_calibrate(frame)
+            while True:
+                frame = self.stream_pipe.recv()
+                # self.coords_3d = get_calibration_coords(frame)
+
+                if len(self.coords_3d) is 4:
+                    pts_dst = np.float32([[0, 0], [width, 0], [0, height], [width, height]])
+                    pts_src = np.float32(self.coords_3d)
+                    self.h, status = cv2.findHomography(pts_src, pts_dst)
+                    np.save("../calibration_data/calibrated_3D", pts_src)
+                    break
+
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+
         while True:
             frame = self.stream_pipe.recv()
             for idx in range(0, 6, 1):
@@ -68,21 +105,49 @@ class Vision:
                 self.redfilter[list(self.redfilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.redfilter.items())[idx][0], 'redfilter')
                 self.bluefilter[list(self.bluefilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.bluefilter.items())[idx][0], 'bluefilter')
 
-            gframe = loc.filter_out_green(frame, self.greenfilter)
-            rframe, coordsRed = loc.filter_out_red(gframe, self.redfilter)
-            bframe, coordsBlue = loc.filter_out_blue(gframe, self.bluefilter)
+            x,y,w,h = cv2.boundingRect(pts_src)
+            frame = frame[y-CropOffset:y+h, x:x+w].copy()
 
-            img = cv2.bitwise_or(rframe, bframe)
+            gframe, coordsR, coordsB = loc.filter_out_green(frame, self.greenfilter)
+            # rframe, coordsRed = loc.filter_out_red(gframe, self.redfilter)
+            # bframe, coordsBlue = loc.filter_out_blue(gframe, self.bluefilter)
 
-            cv2.imshow('total', img)
+            # img = cv2.bitwise_or(rframe, bframe)
+
+            # cv2.imshow('total', img)
+            dstRed = []
+            dstBlue = []
+
+            ref = refClean.copy()
+            for coord in coordsR:
+                a = np.array([[coord[0]+x, coord[1]+y-CropOffset]], dtype='float32')
+                a = np.array([a])
+                dstR = cv2.perspectiveTransform(a, self.h)
+                dstRed.append(dstR)
+
+                cv2.circle(ref, self.totuple(dstR[0][0]), 10, (0, 0, 255), -1)
+
+            for coord in coordsB:
+                a = np.array([[coord[0]+x, coord[1]+y-CropOffset]], dtype='float32')
+                a = np.array([a])
+                dstB = cv2.perspectiveTransform(a, self.h)
+                dstBlue.append(dstB)
+
+                cv2.circle(ref, self.totuple(dstB[0][0]), 10, (255, 0, 0), 4)
+
+
+            cv2.imshow("transform", ref)
+
+            # print("Red", dstRed)
+            # print("Blue", dstBlue)
 
             cv2.imshow('greenfilter', gframe)
-            cv2.imshow('redfilter', rframe)
-            cv2.imshow('bluefilter', bframe)
+            # cv2.imshow('redfilter', rframe)
+            # cv2.imshow('bluefilter', bframe)
 
-            team_coords = {0: coordsBlue, 1: coordsRed}
+            # team_coords = {0: coordsBlue, 1: coordsRed}
 
-            self.comm_pipe.send(team_coords)
+            # self.comm_pipe.send(team_coords)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
