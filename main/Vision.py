@@ -13,6 +13,8 @@ from Calibration import manual_calibrate
 #https://towardsdatascience.com/analyse-a-soccer-game-using-tensorflow-object-detection-and-opencv-e321c230e8f2
 
 
+CropOffset = 40
+
 class Vision:
 
     def __init__(self, stream_pipe=None, comm_pipe=None):
@@ -72,6 +74,7 @@ class Vision:
         ref = cv2.imread('../pics/soccerfield_2d.png')
         height, width, cols = ref.shape
         self.h = None
+        pts_src = None
         refClean = ref.copy()
 
         try:
@@ -102,6 +105,9 @@ class Vision:
                 self.redfilter[list(self.redfilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.redfilter.items())[idx][0], 'redfilter')
                 self.bluefilter[list(self.bluefilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.bluefilter.items())[idx][0], 'bluefilter')
 
+            x,y,w,h = cv2.boundingRect(pts_src)
+            frame = frame[y-CropOffset:y+h, x:x+w].copy()
+
             gframe, coordsR, coordsB = loc.filter_out_green(frame, self.greenfilter)
             # rframe, coordsRed = loc.filter_out_red(gframe, self.redfilter)
             # bframe, coordsBlue = loc.filter_out_blue(gframe, self.bluefilter)
@@ -114,20 +120,20 @@ class Vision:
 
             ref = refClean.copy()
             for coord in coordsR:
-                a = np.array([[coord[0], coord[1]]], dtype='float32')
+                a = np.array([[coord[0]+x, coord[1]+y-CropOffset]], dtype='float32')
                 a = np.array([a])
                 dstR = cv2.perspectiveTransform(a, self.h)
                 dstRed.append(dstR)
 
-                cv2.circle(ref, self.totuple(dstR[0][0]), 5, (0, 0, 255), -1)
+                cv2.circle(ref, self.totuple(dstR[0][0]), 10, (0, 0, 255), -1)
 
             for coord in coordsB:
-                a = np.array([[coord[0], coord[1]]], dtype='float32')
+                a = np.array([[coord[0]+x, coord[1]+y-CropOffset]], dtype='float32')
                 a = np.array([a])
                 dstB = cv2.perspectiveTransform(a, self.h)
                 dstBlue.append(dstB)
 
-                cv2.circle(ref, self.totuple(dstB[0][0]), 5, (255, 0, 0), 1)
+                cv2.circle(ref, self.totuple(dstB[0][0]), 10, (255, 0, 0), 4)
 
 
             cv2.imshow("transform", ref)

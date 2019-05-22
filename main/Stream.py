@@ -45,7 +45,7 @@ class Stream:
 
             if not self.sendFrame.is_alive() or not self.showFrame.is_alive():
                 break
-            # time.sleep(0.020)
+            time.sleep(0.010)
         self.sendFrame.join()
         self.showFrame.join()
         self.cap.release()

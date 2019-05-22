@@ -5,9 +5,13 @@ import numpy as np
 class Localise:
 
     def __init__(self):
+        self.firstFrame = None
         pass
 
     def filter_out_green(self, img, greenfilter):
+
+        if self.firstFrame is None:
+            self.firstFrame = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # lower_green = np.array([20, 50, 50])
         # upper_green = np.array([85, 255, 220])
@@ -58,18 +62,28 @@ class Localise:
 
         res = cv2.bitwise_and(img, img, mask=mask)
 
-        res = cv2.blur(res, (2,2))
+        # res = cv2.blur(res, (3,3))
+        res = cv2.medianBlur(res, 5)
+        # res = cv2.GaussianBlur(res,(5,5),0)
 
-        res_bgr = cv2.cvtColor(res, cv2.COLOR_HSV2BGR)
         res_gray = cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
-        cv2.imshow("res grey", res_gray)
-        cv2.imshow("res", res)
+        # cv2.imshow("res grey", res_gray)
+        # cv2.imshow("res", res)
 
         kernel = np.ones((2, 2), np.uint8)
         thresh = cv2.threshold(res_gray, 10, 255, cv2.THRESH_BINARY_INV)[1]
-        cv2.imshow("thresh1", thresh)
-        thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
-        cv2.imshow("thresh2", thresh)
+        # cv2.imshow("thresh1", thresh)
+        thresh = cv2.dilate(thresh, kernel, iterations=1)
+        # cv2.imshow("thresh2", thresh)
+
+        # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # frameDelta = cv2.absdiff(self.firstFrame, gray)
+        # # frameDelta = cv2.blur(frameDelta, (3, 3))
+        # cv2.imshow("test", frameDelta)
+        # thresh = cv2.threshold(frameDelta, 60, 150, cv2.THRESH_BINARY)[1]
+        # thresh = cv2.dilate(thresh, None, iterations=2)
+        # cv2.imshow("test2", thresh)
+        # # self.firstFrame = gray
 
         contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         prev = 0
@@ -83,37 +97,37 @@ class Localise:
             # cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 0), 3)
             # Detect players
             if (h >= (1.2) * w):
-                if (w > 10 and h >= 40):
+                if (w > 10 and h >= 35):
                     idx = idx + 1
                     player_img = img[y:y + h, x:x + w]
-                    cv2.imshow("players", player_img)
+                    # cv2.imshow("players", player_img)
                     player_hsv = cv2.cvtColor(player_img, cv2.COLOR_BGR2HSV)
                     # If player has blue jersy
                     mask1 = cv2.inRange(player_hsv, lower_blue, upper_blue)
                     res1 = cv2.bitwise_and(player_img, player_img, mask=mask1)
                     res1 = cv2.cvtColor(res1, cv2.COLOR_HSV2BGR)
                     res1 = cv2.cvtColor(res1, cv2.COLOR_BGR2GRAY)
-                    nzCount = cv2.countNonZero(res1)
+                    nzCountBlue = cv2.countNonZero(res1)
                     # print("blue", nzCount)
                     # If player has red jersy
                     mask2 = cv2.inRange(player_hsv, lower_red, upper_red)
                     res2 = cv2.bitwise_and(player_img, player_img, mask=mask2)
                     res2 = cv2.cvtColor(res2, cv2.COLOR_HSV2BGR)
                     res2 = cv2.cvtColor(res2, cv2.COLOR_BGR2GRAY)
-                    nzCountred = cv2.countNonZero(res2)
+                    nzCountRed = cv2.countNonZero(res2)
                     # print("red", nzCountred)
 
-                    if (nzCount >= 60):
+                    if nzCountBlue >= 60 and nzCountBlue > nzCountRed:
                         # Mark blue jersy players as france
                         # cv2.putText(img, 'France', (x - 2, y - 2), font, 0.8, (255, 0, 0), 2, cv2.LINE_AA)
                         cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
                         blue_player_posX = x + int(w / 2)
                         blue_player_posY = y + h
-                        cv2.circle(img, (blue_player_posX, blue_player_posY), 2, (0, 0, 0), 3)
+                        cv2.circle(img, (blue_player_posX, blue_player_posY), 2, (0, 0, 0), 2)
                         coordsBlue.append((blue_player_posX, blue_player_posY))
                     else:
                         pass
-                    if (nzCountred >= 40):
+                    if nzCountRed >= 40 and nzCountRed > nzCountBlue:
                         # Mark red jersy players as belgium
                         # cv2.putText(img, 'Belgium', (x - 2, y - 2), font, 0.8, (0, 0, 255), 2, cv2.LINE_AA)
                         cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 3)
