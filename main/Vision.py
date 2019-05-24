@@ -1,19 +1,13 @@
 import cv2
 import numpy as np
-import os
-# import imutilss
-import multiprocessing as mp
-from time import sleep
 
 from Localisation import Localise
-from Calibration import get_calibration_coords
 from Calibration import manual_calibrate
 
 #https://medium.com/@kananvyas/player-and-football-detection-using-opencv-python-in-fifa-match-6fd2e4e373f0
-#https://towardsdatascience.com/analyse-a-soccer-game-using-tensorflow-object-detection-and-opencv-e321c230e8f2
-
 
 CropOffset = 40
+
 
 class Vision:
 
@@ -21,17 +15,9 @@ class Vision:
         self.stream_pipe = stream_pipe
         self.comm_pipe = comm_pipe
 
-        # self.greenfilter = {'LowHue': 27, 'LowSaturation': 50, 'LowValue': 50, 'HighHue': 50, 'HighSaturation': 255, 'HighValue': 220}
-        # self.redfilter = {'LowHue': 0, 'LowSaturation': 200, 'LowValue': 0, 'HighHue': 25, 'HighSaturation': 255, 'HighValue': 255}
-        # self.bluefilter = {'LowHue': 87, 'LowSaturation': 62, 'LowValue': 64, 'HighHue': 150, 'HighSaturation': 255, 'HighValue': 255}
-
-        self.greenfilter = {'LowHue': 12, 'LowSaturation': 0, 'LowValue': 0, 'HighHue': 83, 'HighSaturation': 150, 'HighValue': 59}
-        # self.redfilter = {'LowHue': 0, 'LowSaturation': 100, 'LowValue': 79, 'HighHue': 19, 'HighSaturation': 255, 'HighValue': 255}
-        # self.redfilter = {'LowHue': 0, 'LowSaturation': 179, 'LowValue': 0, 'HighHue': 179, 'HighSaturation': 255, 'HighValue': 217}
-        # self.bluefilter = {'LowHue': 92, 'LowSaturation': 155, 'LowValue': 0, 'HighHue': 126, 'HighSaturation': 255, 'HighValue': 255}
-
-        self.redfilter = {'LowHue': 0, 'LowSaturation': 205, 'LowValue': 214, 'HighHue': 5, 'HighSaturation': 255, 'HighValue': 254}
-        self.bluefilter = {'LowHue': 92, 'LowSaturation': 176, 'LowValue': 120, 'HighHue': 114, 'HighSaturation': 255, 'HighValue': 255}
+        self.greenfilter = {'LowHue': 30, 'LowSaturation': 0, 'LowValue': 0, 'HighHue': 90, 'HighSaturation': 255, 'HighValue': 255}
+        self.redfilter = {'LowHue': 0, 'LowSaturation': 60, 'LowValue': 70, 'HighHue': 35, 'HighSaturation': 180, 'HighValue': 180}
+        self.bluefilter = {'LowHue': 70, 'LowSaturation': 40, 'LowValue': 40, 'HighHue': 140, 'HighSaturation': 255, 'HighValue': 255}
 
     def totuple(self, a):
         try:
@@ -45,9 +31,9 @@ class Vision:
             print("There is no pipe\nExiting now...")
             return
 
-        cv2.namedWindow('greenfilter', )
-        # cv2.namedWindow('redfilter', )
-        # cv2.namedWindow('bluefilter', )
+        cv2.namedWindow('greenfilter', cv2.WINDOW_AUTOSIZE)
+        cv2.namedWindow('redfilter', cv2.WINDOW_AUTOSIZE)
+        cv2.namedWindow('bluefilter', cv2.WINDOW_AUTOSIZE)
 
         for idx in range(0, 6, 1):
             cv2.createTrackbar(list(self.greenfilter.items())[idx][0], 'greenfilter', list(self.greenfilter.items())[idx][1], 255, self.callback)
@@ -84,19 +70,11 @@ class Vision:
         except Exception as e:
             print(e)
             self.coords_3d = manual_calibrate(frame)
-            while True:
-                frame = self.stream_pipe.recv()
-                # self.coords_3d = get_calibration_coords(frame)
-
-                if len(self.coords_3d) is 4:
-                    pts_dst = np.float32([[0, 0], [width, 0], [0, height], [width, height]])
-                    pts_src = np.float32(self.coords_3d)
-                    self.h, status = cv2.findHomography(pts_src, pts_dst)
-                    np.save("../calibration_data/calibrated_3D", pts_src)
-                    break
-
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
+            if len(self.coords_3d) is 4:
+                pts_dst = np.float32([[0, 0], [width, 0], [0, height], [width, height]])
+                pts_src = np.float32(self.coords_3d)
+                self.h, status = cv2.findHomography(pts_src, pts_dst)
+                np.save("../calibration_data/calibrated_3D", pts_src)
 
         while True:
             frame = self.stream_pipe.recv()
@@ -108,13 +86,8 @@ class Vision:
             x,y,w,h = cv2.boundingRect(pts_src)
             frame = frame[y-CropOffset:y+h, x:x+w].copy()
 
-            gframe, coordsR, coordsB = loc.filter_out_green(frame, self.greenfilter)
-            # rframe, coordsRed = loc.filter_out_red(gframe, self.redfilter)
-            # bframe, coordsBlue = loc.filter_out_blue(gframe, self.bluefilter)
+            img, coordsR, coordsB = loc.recognize_players(frame, self.greenfilter, self.redfilter, self.bluefilter)
 
-            # img = cv2.bitwise_or(rframe, bframe)
-
-            # cv2.imshow('total', img)
             dstRed = []
             dstBlue = []
 
@@ -123,7 +96,7 @@ class Vision:
                 a = np.array([[coord[0]+x, coord[1]+y-CropOffset]], dtype='float32')
                 a = np.array([a])
                 dstR = cv2.perspectiveTransform(a, self.h)
-                dstRed.append(dstR)
+                dstRed.append((dstR[0][0][0]/width, dstR[0][0][1]/height))
 
                 cv2.circle(ref, self.totuple(dstR[0][0]), 10, (0, 0, 255), -1)
 
@@ -131,23 +104,16 @@ class Vision:
                 a = np.array([[coord[0]+x, coord[1]+y-CropOffset]], dtype='float32')
                 a = np.array([a])
                 dstB = cv2.perspectiveTransform(a, self.h)
-                dstBlue.append(dstB)
+                dstBlue.append((dstB[0][0][0]/width, dstB[0][0][1]/height))
 
                 cv2.circle(ref, self.totuple(dstB[0][0]), 10, (255, 0, 0), 4)
 
-
             cv2.imshow("transform", ref)
+            cv2.imshow("found_players", img)
 
-            # print("Red", dstRed)
-            # print("Blue", dstBlue)
+            team_coords = {0: dstBlue, 1: dstRed}
 
-            cv2.imshow('greenfilter', gframe)
-            # cv2.imshow('redfilter', rframe)
-            # cv2.imshow('bluefilter', bframe)
-
-            # team_coords = {0: coordsBlue, 1: coordsRed}
-
-            # self.comm_pipe.send(team_coords)
+            self.comm_pipe.send(team_coords)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break

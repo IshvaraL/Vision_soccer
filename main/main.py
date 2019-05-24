@@ -34,12 +34,12 @@ if __name__ == "__main__":
             vis.join()
             break
 
-        # if comm_parent_conn.poll(1):
-        #     team_coords = comm_parent_conn.recv()
+        if comm_parent_conn.poll(1):
+            team_coords = comm_parent_conn.recv()
         #
-        # if team_coords is not None:
-        #     msg = team_coords
-        #     print(msg)
+        if team_coords is not None:
+            msg = team_coords
+            print(msg)
         #     comm.open()
         #     comm.send(team_coords)
         #     comm.close()

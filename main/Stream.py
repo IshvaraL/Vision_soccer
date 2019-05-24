@@ -94,60 +94,12 @@ class Stream:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-    def increase_brightness(self, img, value=-30):
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        h, s, v = cv2.split(hsv)
-
-        lim = 255 - value
-        v[v > lim] = 255
-        v[v <= lim] += value
-
-        final_hsv = cv2.merge((h, s, v))
-        img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
-        return img
-
-    def decrease_brightness(self, img, value=10):
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        h, s, v = cv2.split(hsv)
-
-        lim = 255 - value
-        v[v > lim] = 255
-        v[v <= lim] -= value
-
-        final_hsv = cv2.merge((h, s, v))
-        img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
-        return img
-
-    def decrease_saturation(self, img, value=30):
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        h, s, v = cv2.split(hsv)
-
-        lim = 255 - value
-        s[s > lim] = 255
-        s[s <= lim] += value
-
-        final_hsv = cv2.merge((h, s, v))
-        img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
-        return img
-
     def send(self):
         time.sleep(0.5)
         while True:
             self.lock.acquire()
             frame = self.videoframe
             self.lock.release()
-
-            # frame = self.decrease_brightness(frame)
-            # frame = self.decrease_saturation(frame)
-
-            # hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  # convert it to hsv
-            #
-            # h, s, v = cv2.split(hsv)
-            # v -= 10
-            # h += 20
-            # final_hsv = cv2.merge((h, s, v))
-            #
-            # frame = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
 
             self.pipe.send(frame)
 
