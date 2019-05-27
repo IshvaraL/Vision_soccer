@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 from Localisation import Localise
-from Calibration import manual_calibrate
+from Calibration import Calibration
 
 #https://medium.com/@kananvyas/player-and-football-detection-using-opencv-python-in-fifa-match-6fd2e4e373f0
 
@@ -14,7 +14,7 @@ class Vision:
     def __init__(self, stream_pipe=None, comm_pipe=None):
         self.stream_pipe = stream_pipe
         self.comm_pipe = comm_pipe
-
+        self.cal = Calibration()
         self.greenfilter = {'LowHue': 30, 'LowSaturation': 0, 'LowValue': 0, 'HighHue': 90, 'HighSaturation': 255, 'HighValue': 255}
         self.redfilter = {'LowHue': 0, 'LowSaturation': 60, 'LowValue': 70, 'HighHue': 35, 'HighSaturation': 180, 'HighValue': 180}
         self.bluefilter = {'LowHue': 70, 'LowSaturation': 40, 'LowValue': 40, 'HighHue': 140, 'HighSaturation': 255, 'HighValue': 255}
@@ -69,7 +69,7 @@ class Vision:
             self.h, status = cv2.findHomography(pts_src, pts_dst)
         except Exception as e:
             print(e)
-            self.coords_3d = manual_calibrate(frame)
+            self.coords_3d = self.cal.manual_calibrate(frame)
             if len(self.coords_3d) is 4:
                 pts_dst = np.float32([[0, 0], [width, 0], [0, height], [width, height]])
                 pts_src = np.float32(self.coords_3d)
@@ -146,7 +146,7 @@ class Vision:
         loc = Localise()
         frame = self.stream_pipe.recv()
         height, width, cols = frame.shape
-        self.coords_3d = manual_calibrate(frame)
+        self.coords_3d = self.cal.manual_calibrate(frame)
         while True:
             frame = self.stream_pipe.recv()
             # self.coords_3d = get_calibration_coords(frame)
