@@ -4,45 +4,58 @@ from Stream import Stream
 from Vision import Vision
 from Communication import Comm
 
+
+class Main:
+
+    def __init__(self):
+        self.stream_parent_conn, self.stream_child_conn = mp.Pipe()
+
+        self.comm_parent_conn, self.comm_child_conn = mp.Pipe()
+
+        self.stream = Stream(self.stream_child_conn)
+        self.vision = Vision(self.stream_parent_conn, self.comm_child_conn)
+
+        # self.comm = Comm()
+
+        self.str = mp.Process(target=self.stream.run, args=())
+        self.vis = mp.Process(target=self.vision.run, args=())
+
+        self.team_coords = None
+
+    def start(self):
+        self.str.start()
+        time.sleep(1)
+        self.vis.start()
+
+        while True:
+            if not self.vis.is_alive():
+                print("vis died")
+                self.str.terminate()
+                self.str.join()
+                break
+
+            if not self.str.is_alive():
+                print("str died")
+                self.vis.terminate()
+                self.vis.join()
+                break
+
+            if self.comm_parent_conn.poll(1):
+                self.team_coords = self.comm_parent_conn.recv()
+            #
+            if self.team_coords is not None:
+                self.msg = self.team_coords
+                print(self.msg)
+            #     self.comm.open()
+            #     self.comm.send(team_coords)
+            #     self.comm.close()
+            #     # time.sleep(0.5)
+
+
 if __name__ == "__main__":
+    main = Main()
+    main.start()
 
-    stream_parent_conn, stream_child_conn = mp.Pipe()
 
-    comm_parent_conn, comm_child_conn = mp.Pipe()
-
-    stream = Stream(stream_child_conn)
-    vision = Vision(stream_parent_conn, comm_child_conn)
-
-    # comm = Comm()
-
-    str = mp.Process(target=stream.run, args=())
-    vis = mp.Process(target=vision.run, args=())
-    str.start()
-    time.sleep(1)
-    vis.start()
-    team_coords = None
-    while True:
-        if not vis.is_alive():
-            print("vis died")
-            str.terminate()
-            str.join()
-            break
-
-        if not str.is_alive():
-            print("str died")
-            vis.terminate()
-            vis.join()
-            break
-
-        if comm_parent_conn.poll(1):
-            team_coords = comm_parent_conn.recv()
-        #
-        if team_coords is not None:
-            msg = team_coords
-            print(msg)
-        #     comm.open()
-        #     comm.send(team_coords)
-        #     comm.close()
-        #     # time.sleep(0.5)
 
 
