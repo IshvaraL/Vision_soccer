@@ -22,9 +22,9 @@ class Stream:
             return
 
         # self.cap = cv2.VideoCapture('../rec/stream_2019-04-29_10-10-03.avi')
-        self.cap = cv2.VideoCapture('../rec/stream_2019-05-07_12-54-17_Trim.mp4')
+        # self.cap = cv2.VideoCapture('../rec/stream_2019-05-07_12-54-17_Trim.mp4')
         # self.cap = cv2.VideoCapture('../rec/stream_2019-05-07_12-54-17.avi')
-        # self.cap = cv2.VideoCapture('http://root:pass@10.42.80.102/axis-cgi/mjpg/video.cgi?streamprofile=Soccer&videokeyframeinterval=')
+        self.cap = cv2.VideoCapture('http://root:pass@10.42.80.102/axis-cgi/mjpg/video.cgi?streamprofile=Soccer&videokeyframeinterval=')
         if self.cap.isOpened() is False:
             return
 
