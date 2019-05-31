@@ -12,17 +12,21 @@ class Comm:
     def __init__(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.settimeout(10)
-        self.s.connect((HOST, PORT))
+        self.wait_timer = time.time_ns()
+        try:
+            self.s.connect((HOST, PORT))
+        except:
+            print("Could not connect to game")
         time.sleep(0.5)
 
     def send(self, message):
-        # data = pickle.dumps(message + "<EOF>")
-        # data = b"Test<EOF>"
-        # data = base64.b64encode(pickle.dumps(message)).decode("utf-8")
         data = str(message)
         print(data)
-        self.s.send(data.encode())
-        self.s.send(b'<EOF>')
+        try:
+            self.s.send(data.encode())
+            self.s.send(b'<EOF>')
+        except:
+            self.open()
 
     def close(self):
         self.s.close()
@@ -31,8 +35,14 @@ class Comm:
     def open(self):
         if self.s is None:
           self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-          self.s.settimeout(10)
-          self.s.connect((HOST, PORT))
+          self.s.settimeout(1)
+          try:
+              if time.time_ns() > self.wait_timer:
+                  self.s.connect((HOST, PORT))
+                  print("Connected")
+          except:
+                self.wait_timer = time.time_ns() + 5000000000
+                print("Could not connect")
 
 
 if __name__ == "__main__":
@@ -54,4 +64,9 @@ if __name__ == "__main__":
         [1, [362, 112], ["Old coords"]]
     ]
 
-    comm.send(msg)
+    while True:
+        comm.open()
+        comm.send(msg)
+        comm.close()
+        time.sleep(2)
+        print(msg)
