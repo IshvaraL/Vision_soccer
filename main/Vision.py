@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+import time
 from Localisation import Localise
 from Calibration import Calibration
 
@@ -15,9 +15,14 @@ class Vision:
         self.stream_pipe = stream_pipe
         self.comm_pipe = comm_pipe
         self.cal = Calibration()
-        self.greenfilter = {'LowHue': 12, 'LowSaturation': 0, 'LowValue': 0, 'HighHue': 163, 'HighSaturation': 255, 'HighValue': 255}
+        # self.greenfilter = {'LowHue': 12, 'LowSaturation': 0, 'LowValue': 0, 'HighHue': 163, 'HighSaturation': 255, 'HighValue': 255}
+        self.greenfilter = {'LowHue': 0, 'LowSaturation': 121, 'LowValue': 163, 'HighHue': 255, 'HighSaturation': 255, 'HighValue': 255}
         self.redfilter = {'LowHue': 0, 'LowSaturation': 60, 'LowValue': 70, 'HighHue': 35, 'HighSaturation': 180, 'HighValue': 180}
-        self.bluefilter = {'LowHue': 70, 'LowSaturation': 40, 'LowValue': 40, 'HighHue': 140, 'HighSaturation': 255, 'HighValue': 255}
+        # self.bluefilter = {'LowHue': 70, 'LowSaturation': 40, 'LowValue': 40, 'HighHue': 140, 'HighSaturation': 255, 'HighValue': 255}
+        self.bluefilter = {'LowHue': 109, 'LowSaturation': 72, 'LowValue': 126, 'HighHue': 180, 'HighSaturation': 255, 'HighValue': 255}
+
+        # Some test code
+        self.frame_counter = 0 # Do something every 5 frames
 
     def totuple(self, a):
         try:
@@ -78,6 +83,11 @@ class Vision:
 
         while True:
             frame = self.stream_pipe.recv()
+            if self.frame_counter < 18:
+                self.frame_counter += 1
+                continue
+            self.frame_counter = 0
+
             for idx in range(0, 6, 1):
                 self.greenfilter[list(self.greenfilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.greenfilter.items())[idx][0], 'greenfilter')
                 self.redfilter[list(self.redfilter.items())[idx][0]] = cv2.getTrackbarPos(list(self.redfilter.items())[idx][0], 'redfilter')
@@ -86,7 +96,9 @@ class Vision:
             x,y,w,h = cv2.boundingRect(pts_src)
             frame = frame[y-CropOffset:y+h, x:x+w].copy()
 
-            img, coordsR, coordsB = loc.recognize_players(frame, self.greenfilter, self.redfilter, self.bluefilter)
+            res, img, coordsR, coordsB = loc.recognize_players(frame, self.greenfilter, self.redfilter, self.bluefilter)
+
+            cv2.imshow('greenfilter', res)
 
             dstRed = []
             dstBlue = []

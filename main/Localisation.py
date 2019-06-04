@@ -31,6 +31,9 @@ class Localise:
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
         mask = cv2.inRange(hsv, lower_green, upper_green)
+        mask2 = cv2.inRange(hsv, lower_blue, upper_blue)
+
+        mask = cv2.bitwise_or(mask, mask2)
 
         res = cv2.bitwise_and(img, img, mask=mask)
 
@@ -40,23 +43,33 @@ class Localise:
 
         res_gray = cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
         # cv2.imshow("res grey", res_gray)
-        # cv2.imshow("res", res)
+        cv2.imshow("res", res)
 
 
         kernel = np.ones((15, 15), np.uint8)
         thresh = cv2.threshold(res_gray, 10, 255, cv2.THRESH_BINARY_INV)[1]
+        thresh = cv2.bitwise_not(thresh)
         # cv2.imshow("thresh1", thresh)
         thresh = cv2.erode(thresh, None, iterations=2)
         # cv2.imshow('erode', thresh)
         thresh = cv2.dilate(thresh, kernel, iterations=1)
-        # cv2.imshow("thresh2", thresh)
+        cv2.imshow("thresh2", thresh)
 
         # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # frameDelta = cv2.absdiff(self.firstFrame, gray)
-        # # frameDelta = cv2.blur(frameDelta, (3, 3))
+        # # frameDelta = cv2.blur(frameDelta, (5, 5))
+        # frameDelta = cv2.GaussianBlur(frameDelta,(21,21),0)
         # cv2.imshow("test", frameDelta)
-        # thresh = cv2.threshold(frameDelta, 60, 150, cv2.THRESH_BINARY)[1]
-        # thresh = cv2.dilate(thresh, None, iterations=2)
+        # thresh = cv2.threshold(frameDelta, 15, 255, cv2.THRESH_BINARY)[1]
+        # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+        # np.array([[0, 0, 1, 0, 0],
+        #           [0, 0, 1, 0, 0],
+        #           [0, 0, 1, 0, 0],
+        #           [0, 0, 1, 0, 0],
+        #           [0, 0, 1, 0, 0]], dtype=np.uint8)
+        #
+        # thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=1)
+        # # dilate(thresh, kernel, iterations=3)
         # cv2.imshow("test2", thresh)
         # # self.firstFrame = gray
 
@@ -71,8 +84,10 @@ class Localise:
             x, y, w, h = cv2.boundingRect(c)
             # Detect players
             if (h >= (1.2) * w):
-                if (w > 10 and h >= 35):
+                if (w > 10 and w < 60 and h >= 35 and h < 90):
                     cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 0), 3)
+                    cv2.putText(img, str(w), (x - 2, y - 2), font, 0.4, (255, 0, 0), 1, cv2.LINE_AA)
+                    cv2.putText(img, str(h), (x + w, y + 5), font, 0.4, (0, 0, 255), 1, cv2.LINE_AA)
                     red_player_posX = x + int(w / 2)
                     red_player_posY = y + h
                     coordsRed.append((red_player_posX, red_player_posY))
@@ -118,4 +133,4 @@ class Localise:
                     # else:
                     #     pass
 
-        return img, coordsRed, coordsBlue
+        return res, img, coordsRed, coordsBlue

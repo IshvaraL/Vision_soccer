@@ -15,7 +15,7 @@ class Main:
         self.stream = Stream(self.stream_child_conn)
         self.vision = Vision(self.stream_parent_conn, self.comm_child_conn)
 
-        self.comm = Comm()
+        # self.comm = Comm()
 
         self.str = mp.Process(target=self.stream.run, args=())
         self.vis = mp.Process(target=self.vision.run, args=())
@@ -43,13 +43,13 @@ class Main:
             if self.comm_parent_conn.poll(1):
                 self.team_coords = self.comm_parent_conn.recv()
             #
-            if self.team_coords is not None:
-                self.msg = self.team_coords
-                print(self.msg)
-                self.comm.open()
-                self.comm.send(self.msg)
-                self.comm.close()
-                # time.sleep(0.5)
+            # if self.team_coords is not None:
+            #     self.msg = self.team_coords
+            #     print(self.msg)
+            #     self.comm.open()
+            #     self.comm.send(self.msg)
+            #     self.comm.close()
+            #     # time.sleep(0.5)
 
 
 if __name__ == "__main__":
