@@ -39,7 +39,7 @@ class Main:
                 self.vis.terminate()
                 self.vis.join()
                 break
-
+            #
             if self.comm_parent_conn.poll(1):
                 self.team_coords = self.comm_parent_conn.recv()
             #
