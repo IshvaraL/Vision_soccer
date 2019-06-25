@@ -23,6 +23,7 @@ class Stream:
 
         self.cap = cv2.VideoCapture('../rec/stream_2019-06-03_14-51-39.avi')
         # self.cap = cv2.VideoCapture('http://root:pass@10.42.80.102/axis-cgi/mjpg/video.cgi?streamprofile=Soccer&videokeyframeinterval=')
+        # self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         if self.cap.isOpened() is False:
             return
 
@@ -32,6 +33,7 @@ class Stream:
         self.showFrame.start()
 
         while True:
+            #self.cap = cv2.VideoCapture('http://root:pass@10.42.80.102/axis-cgi/jpg/image.cgi')
             _, frame = self.cap.read()
 
             if frame is not None:
@@ -43,7 +45,7 @@ class Stream:
 
             if not self.sendFrame.is_alive() or not self.showFrame.is_alive():
                 break
-            time.sleep(0.010)
+            # time.sleep(1)
         self.sendFrame.join()
         self.showFrame.join()
         self.cap.release()
